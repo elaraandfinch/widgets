@@ -30,7 +30,8 @@
 [data-theme=coquette][data-mode=dark]{--page:#1D1416;--card:#271B1E;--tile:#33222667;--ink:#F6DDE0;--soft:#C08E95;--accent:#E07A86;--accent2:#E07A86;--line:#3D2A2E}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
-body{background:var(--page);color:var(--ink);font-family:var(--body);display:grid;place-items:center;padding:10px;overflow:hidden;-webkit-font-smoothing:antialiased}
+body{background:var(--page);color:var(--ink);font-family:var(--body);display:grid;place-items:center;padding:6px;overflow:hidden;-webkit-font-smoothing:antialiased}
+.label{overflow-wrap:anywhere}
 body.nobg{background:transparent}
 .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);text-align:center}
@@ -43,7 +44,7 @@ button.on{background:var(--accent2);color:var(--card);border-color:var(--accent2
 
 /* clock */
 .clock{display:flex;align-items:center;justify-content:center;gap:10px}
-.tile{position:relative;background:var(--tile);border-radius:calc(var(--radius) - 6px);width:min(150px,40vw);aspect-ratio:1/1.05;display:grid;place-items:center;font-family:var(--display);font-size:min(84px,23vw);font-variant-numeric:tabular-nums;line-height:1;color:var(--ink);overflow:hidden}
+.tile{position:relative;background:var(--tile);border-radius:calc(var(--radius) - 6px);width:min(150px,calc((100vw - 88px) / 2));aspect-ratio:1/1.05;display:grid;place-items:center;font-family:var(--display);font-size:min(84px,calc((100vw - 88px) / 3.4));font-variant-numeric:tabular-nums;line-height:1;color:var(--ink);overflow:hidden}
 .tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
 .ampm{position:absolute;right:10px;bottom:8px;font-family:var(--body);font-size:11px;letter-spacing:.12em;color:var(--soft)}
 .clock-date{margin-top:12px}
@@ -96,9 +97,13 @@ button.on{background:var(--accent2);color:var(--card);border-color:var(--accent2
 <script>
 (function(){
   const P=new URLSearchParams(location.search);
-  const w=P.get("w")||"clock", theme=P.get("theme")||"minimal", mode=P.get("mode")||"light";
-  document.documentElement.dataset.theme=theme; document.documentElement.dataset.mode=mode;
-  if(P.get("bg")==="none") document.body.classList.add("nobg");
+  const w=P.get("w")||"clock", theme=P.get("theme")||"minimal";
+  let mode=P.get("mode")||"auto";
+  const mq=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)");
+  const applyMode=()=>{document.documentElement.dataset.mode=mode==="auto"?(mq&&mq.matches?"dark":"light"):mode};
+  document.documentElement.dataset.theme=theme; applyMode();
+  if(mode==="auto"&&mq&&mq.addEventListener) mq.addEventListener("change",applyMode);
+  if(P.get("bg")!=="page") document.body.classList.add("nobg");
   const app=document.getElementById("app");
   const pad=n=>String(n).padStart(2,"0");
   const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
