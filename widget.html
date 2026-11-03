@@ -32,7 +32,9 @@
 html,body{height:100%}
 body{background:var(--page);color:var(--ink);font-family:var(--body);display:grid;place-items:center;padding:6px;overflow:hidden;-webkit-font-smoothing:antialiased}
 .label{overflow-wrap:anywhere}
-body.nobg{background:transparent}
+/* Notion paints embeds white, so match Notion's own page colors instead of going transparent */
+body.nobg{background:#FFFFFF}
+[data-mode=dark] body.nobg{background:#191919}
 .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);text-align:center}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px;letter-spacing:.06em}
@@ -44,7 +46,7 @@ button.on{background:var(--accent2);color:var(--card);border-color:var(--accent2
 
 /* clock */
 .clock{display:flex;align-items:center;justify-content:center;gap:10px}
-.tile{position:relative;background:var(--tile);border-radius:calc(var(--radius) - 6px);width:min(150px,calc((100vw - 88px) / 2));aspect-ratio:1/1.05;display:grid;place-items:center;font-family:var(--display);font-size:min(84px,calc((100vw - 88px) / 3.4));font-variant-numeric:tabular-nums;line-height:1;color:var(--ink);overflow:hidden}
+.tile{position:relative;background:var(--tile);border-radius:calc(var(--radius) - 6px);width:min(150px,calc((100vw - 80px) / 2),calc(100vh - 110px));aspect-ratio:1/1.05;display:grid;place-items:center;font-family:var(--display);font-size:min(84px,calc((100vw - 80px) / 3.2),calc((100vh - 110px) / 1.75));font-variant-numeric:tabular-nums;line-height:1;color:var(--ink);overflow:hidden}
 .tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
 .ampm{position:absolute;right:10px;bottom:8px;font-family:var(--body);font-size:11px;letter-spacing:.12em;color:var(--soft)}
 .clock-date{margin-top:12px}
@@ -114,12 +116,13 @@ button.on{background:var(--accent2);color:var(--card);border-color:var(--accent2
   const W={
     clock(){
       const h24=P.get("h")==="24";
-      app.innerHTML=`<div class="clock"><div class="tile" id="hh"></div><div class="tile" id="mm"><span class="ampm" id="ap"></span></div></div><p class="label clock-date" id="dt"></p>`;
-      const hh=app.querySelector("#hh"),mm=app.querySelector("#mm"),ap=app.querySelector("#ap"),dt=app.querySelector("#dt");
-      const mmText=document.createTextNode(""); mm.prepend(mmText);
-      function tick(){const d=new Date();let h=d.getHours();
-        if(!h24){ap.textContent=h<12?"AM":"PM";h=h%12||12}else ap.textContent="";
-        hh.textContent=pad(h);mmText.textContent=pad(d.getMinutes());dt.innerHTML=dateLine(d)+deco}
+      app.innerHTML=`<div class="clock"><div class="tile" id="hh"></div><div class="tile" id="mm"></div></div><p class="label clock-date" id="dt"></p>`;
+      const hh=app.querySelector("#hh"),mm=app.querySelector("#mm"),dt=app.querySelector("#dt");
+      const SHORT=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      function tick(){const d=new Date();let h=d.getHours(),ap="";
+        if(!h24){ap=(h<12?"AM":"PM")+"  ·  ";h=h%12||12}
+        hh.textContent=pad(h);mm.textContent=pad(d.getMinutes());
+        dt.innerHTML=ap+SHORT[d.getDay()]+", "+MONTHS[d.getMonth()].slice(0,3)+" "+d.getDate()+deco}
       tick();setInterval(tick,1000);
     },
     greeting(){
