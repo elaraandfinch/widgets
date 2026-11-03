@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planner Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;1,500&display=swap">
+<style>
+/* One file, many widgets: ?w=clock|greeting|calendar|countdown|pomodoro|quote  &theme=minimal|pastel|coquette  &mode=light|dark  &bg=none */
+:root{
+  --page:#FAF8F5; --card:#FFFFFF; --tile:#F2EEE8; --ink:#2E2A26; --soft:#8C8279; --accent:#B39C82; --accent2:#2E2A26; --line:#E7E1D9;
+  --display:"Cormorant Garamond",Georgia,serif; --body:"Jost","Helvetica Neue",Arial,sans-serif; --script:"Cormorant Garamond",Georgia,serif;
+  --radius:18px; --shadow:0 1px 2px rgba(46,42,38,.06);
+}
+[data-theme=minimal][data-mode=dark]{--page:#191919;--card:#202020;--tile:#2A2826;--ink:#EDE8E1;--soft:#9C948B;--accent:#C9B49A;--accent2:#EDE8E1;--line:#33302D}
+[data-theme=pastel]{
+  --page:linear-gradient(135deg,#D7EDE9 0%,#E9E4F3 60%,#EADCEF 100%); --card:rgba(255,255,255,.62); --tile:rgba(255,255,255,.75);
+  --ink:#5B4A40; --soft:#9A8A93; --accent:#7F9E6E; --accent2:#7A5E4E; --line:rgba(122,94,78,.14);
+  --display:"Comfortaa","Trebuchet MS",sans-serif; --body:"Comfortaa","Trebuchet MS",sans-serif; --script:"Comfortaa",sans-serif;
+  --radius:22px; --shadow:0 8px 30px rgba(120,100,150,.12);
+}
+[data-theme=pastel][data-mode=dark]{--page:linear-gradient(135deg,#1E2A2A 0%,#24212E 60%,#2A2230 100%);--card:rgba(255,255,255,.07);--tile:rgba(255,255,255,.09);--ink:#E8E0EA;--soft:#A99CB0;--accent:#A9C79A;--accent2:#E3C9B6;--line:rgba(255,255,255,.1);--shadow:none}
+[data-theme=coquette]{
+  --page:#F8E6E6; --card:#FFF7F6; --tile:#FBEAEA; --ink:#5A1F27; --soft:#B07A80; --accent:#A8323F; --accent2:#A8323F; --line:#EFCFD0;
+  --display:"Playfair Display",Georgia,serif; --body:"Jost","Helvetica Neue",Arial,sans-serif; --script:"Pinyon Script","Snell Roundhand",cursive;
+  --radius:20px; --shadow:0 2px 0 #EFCFD0;
+}
+[data-theme=coquette][data-mode=dark]{--page:#1D1416;--card:#271B1E;--tile:#33222667;--ink:#F6DDE0;--soft:#C08E95;--accent:#E07A86;--accent2:#E07A86;--line:#3D2A2E}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--page);color:var(--ink);font-family:var(--body);display:grid;place-items:center;padding:10px;overflow:hidden;-webkit-font-smoothing:antialiased}
+body.nobg{background:transparent}
+.card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);text-align:center}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px;letter-spacing:.06em}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent2);color:var(--card);border-color:var(--accent2)}
+[data-theme=pastel] button.on{color:#fff}
+.heart{color:var(--accent);font-size:12px}
+
+/* clock */
+.clock{display:flex;align-items:center;justify-content:center;gap:10px}
+.tile{position:relative;background:var(--tile);border-radius:calc(var(--radius) - 6px);width:min(150px,40vw);aspect-ratio:1/1.05;display:grid;place-items:center;font-family:var(--display);font-size:min(84px,23vw);font-variant-numeric:tabular-nums;line-height:1;color:var(--ink);overflow:hidden}
+.tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.ampm{position:absolute;right:10px;bottom:8px;font-family:var(--body);font-size:11px;letter-spacing:.12em;color:var(--soft)}
+.clock-date{margin-top:12px}
+
+/* greeting */
+.greet{text-align:center;display:grid;gap:6px}
+.greet h1{font-family:var(--script);font-weight:400;font-size:clamp(28px,8vw,40px);line-height:1.15}
+[data-theme=coquette] .greet h1{font-size:clamp(34px,10vw,50px)}
+.greet p{color:var(--soft);font-size:13px}
+
+/* calendar */
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-head h2{font-family:var(--display);font-weight:500;font-size:22px}
+.cal-head button{border:none;padding:4px 8px;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;font-variant-numeric:tabular-nums}
+.grid .dn{font-size:10px;letter-spacing:.12em;color:var(--soft);padding-bottom:4px}
+.grid .d{font-size:13px;padding:6px 0;border-radius:999px}
+.grid .d.out{opacity:.3}
+.grid .d.today{background:var(--accent2);color:var(--card);font-weight:600}
+[data-theme=pastel] .grid .d.today{color:#fff}
+
+/* countdown */
+.cd-title{font-family:var(--display);font-size:20px;text-align:center;margin:4px 0 14px}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cd div{background:var(--tile);border-radius:14px;padding:12px 4px;text-align:center}
+.cd b{display:block;font-family:var(--display);font-weight:500;font-size:clamp(24px,7vw,34px);font-variant-numeric:tabular-nums}
+.cd span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft)}
+
+/* pomodoro */
+.pomo{display:grid;justify-items:center;gap:12px}
+.modes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .bgc{stroke:var(--line)}
+.ring .fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;align-content:center;font-family:var(--display);font-size:38px;font-variant-numeric:tabular-nums}
+.ring .t small{font-family:var(--body);font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase}
+.ctrl{display:flex;gap:8px}
+
+/* quote */
+.quote{text-align:center;display:grid;gap:10px;padding:6px 4px}
+.quote q{font-family:var(--display);font-style:italic;font-size:clamp(18px,5vw,24px);line-height:1.35;quotes:none;text-wrap:balance}
+[data-theme=pastel] .quote q{font-style:normal;font-size:clamp(15px,4.4vw,19px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+(function(){
+  const P=new URLSearchParams(location.search);
+  const w=P.get("w")||"clock", theme=P.get("theme")||"minimal", mode=P.get("mode")||"light";
+  document.documentElement.dataset.theme=theme; document.documentElement.dataset.mode=mode;
+  if(P.get("bg")==="none") document.body.classList.add("nobg");
+  const app=document.getElementById("app");
+  const pad=n=>String(n).padStart(2,"0");
+  const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const deco=theme==="coquette"?' <span class="heart">♥</span>':"";
+  const dateLine=d=>`${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+
+  const W={
+    clock(){
+      const h24=P.get("h")==="24";
+      app.innerHTML=`<div class="clock"><div class="tile" id="hh"></div><div class="tile" id="mm"><span class="ampm" id="ap"></span></div></div><p class="label clock-date" id="dt"></p>`;
+      const hh=app.querySelector("#hh"),mm=app.querySelector("#mm"),ap=app.querySelector("#ap"),dt=app.querySelector("#dt");
+      const mmText=document.createTextNode(""); mm.prepend(mmText);
+      function tick(){const d=new Date();let h=d.getHours();
+        if(!h24){ap.textContent=h<12?"AM":"PM";h=h%12||12}else ap.textContent="";
+        hh.textContent=pad(h);mmText.textContent=pad(d.getMinutes());dt.innerHTML=dateLine(d)+deco}
+      tick();setInterval(tick,1000);
+    },
+    greeting(){
+      const name=P.get("name");
+      app.innerHTML=`<div class="greet"><p class="label" id="dt"></p><h1 id="g"></h1><p id="s"></p></div>`;
+      function tick(){const d=new Date(),h=d.getHours();
+        const g=h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+        app.querySelector("#g").textContent=g+(name?", "+name:"");
+        app.querySelector("#dt").innerHTML=dateLine(d)+deco;
+        app.querySelector("#s").textContent=h<12?"One gentle step at a time.":h<18?"Keep going, you're doing great.":"Rest is part of the plan."}
+      tick();setInterval(tick,30000);
+    },
+    calendar(){
+      let v=new Date();v.setDate(1);
+      function draw(){
+        const t=new Date(),y=v.getFullYear(),m=v.getMonth();
+        const first=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate(), prev=new Date(y,m,0).getDate();
+        let cells="";["M","T","W","T","F","S","S"].forEach(x=>cells+=`<div class="dn">${x}</div>`);
+        for(let i=first;i>0;i--)cells+=`<div class="d out">${prev-i+1}</div>`;
+        for(let d=1;d<=days;d++){const today=d===t.getDate()&&m===t.getMonth()&&y===t.getFullYear();cells+=`<div class="d${today?" today":""}">${d}</div>`}
+        const rest=(7-((first+days)%7))%7;for(let d=1;d<=rest;d++)cells+=`<div class="d out">${d}</div>`;
+        app.innerHTML=`<div class="cal-head"><button id="p" aria-label="Previous month">‹</button><h2>${MONTHS[m]} <span style="color:var(--soft)">${y}</span></h2><button id="n" aria-label="Next month">›</button></div><div class="grid">${cells}</div>`;
+        app.querySelector("#p").onclick=()=>{v.setMonth(v.getMonth()-1);draw()};
+        app.querySelector("#n").onclick=()=>{v.setMonth(v.getMonth()+1);draw()};
+      }
+      draw();
+    },
+    countdown(){
+      const to=new Date((P.get("to")||"2028-01-01")+"T00:00:00"), label=P.get("label")||"New Year 2028";
+      app.innerHTML=`<p class="label">counting down to</p><h2 class="cd-title">${label.replace(/[<>&]/g,"")}${deco}</h2><div class="cd"><div><b id="d"></b><span>days</span></div><div><b id="h"></b><span>hours</span></div><div><b id="m"></b><span>min</span></div><div><b id="s"></b><span>sec</span></div></div>`;
+      function tick(){let x=Math.max(0,to-new Date())/1000;
+        const d=Math.floor(x/86400);x%=86400;const h=Math.floor(x/3600);x%=3600;
+        app.querySelector("#d").textContent=d;app.querySelector("#h").textContent=pad(h);
+        app.querySelector("#m").textContent=pad(Math.floor(x/60));app.querySelector("#s").textContent=pad(Math.floor(x%60))}
+      tick();setInterval(tick,1000);
+    },
+    pomodoro(){
+      const M={focus:[25,"focus"],short:[5,"short break"],long:[15,"long break"]};
+      let cur="focus",left=25*60,total=left,timer=null;const C=2*Math.PI*66;
+      app.innerHTML=`<div class="pomo"><div class="modes"><button data-m="focus" class="on">Focus</button><button data-m="short">Short break</button><button data-m="long">Long break</button></div>
+      <div class="ring"><svg viewBox="0 0 150 150"><circle class="bgc" cx="75" cy="75" r="66"/><circle class="fg" id="fg" cx="75" cy="75" r="66" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg><div class="t"><span id="tt"></span><small id="tl">focus</small></div></div>
+      <div class="ctrl"><button id="go">Start</button><button id="rs">Reset</button></div></div>`;
+      const fg=app.querySelector("#fg"),tt=app.querySelector("#tt"),go=app.querySelector("#go");
+      function show(){tt.textContent=pad(Math.floor(left/60))+":"+pad(left%60);fg.style.strokeDashoffset=C*(1-left/total);app.querySelector("#tl").textContent=M[cur][1]}
+      function stop(){clearInterval(timer);timer=null;go.textContent="Start"}
+      function set(k){stop();cur=k;left=total=M[k][0]*60;app.querySelectorAll("[data-m]").forEach(b=>b.classList.toggle("on",b.dataset.m===k));show()}
+      app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>set(b.dataset.m));
+      go.onclick=()=>{if(timer)return stop();go.textContent="Pause";timer=setInterval(()=>{left--;if(left<=0){left=0;stop();go.textContent="Done ✓"}show()},1000)};
+      app.querySelector("#rs").onclick=()=>set(cur);
+      show();
+    },
+    quote(){
+      const Q=["Small steps every day add up to big changes.","You don't have to do it all today.","Progress, not perfection.","Rest is productive too.","Start where you are. Use what you have.","Be gentle with yourself, you're doing your best.","One task at a time is still moving forward.","Your pace is the right pace.","Make today a little lighter.","Done is better than perfect.","Plan gently, live fully.","Tiny habits, big life.","It's okay to begin again.","Focus on what you can control.","Celebrate the small wins."];
+      const d=new Date(),i=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)%Q.length;
+      app.innerHTML=`<div class="quote"><p class="label">today's reminder</p><q>${Q[i]}</q>${deco?'<span class="heart" style="text-align:center">♥</span>':""}</div>`;
+    }
+  };
+  (W[w]||W.clock)();
+})();
+</script>
+</body>
+</html>
